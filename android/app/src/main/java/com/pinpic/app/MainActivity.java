@@ -90,15 +90,32 @@ public class MainActivity extends BridgeActivity {
         }
 
         @JavascriptInterface
-        public void pickImages(String callbackId) {
+        public void pickImages(final String callbackId) {
             pendingCallbackId = callbackId;
-            jsEval("document.getElementById('android-bridge-status').textContent='Java: launching picker...';document.getElementById('android-bridge-status').style.background='#f0f';");
-
-            runOnUiThread(() -> {
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                intent.setType("image/*");
-                intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-                startActivityForResult(Intent.createChooser(intent, "选择图片"), FILE_PICKER_REQUEST);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        WebView wv = getBridge().getWebView();
+                        if (wv != null) {
+                            wv.evaluateJavascript(
+                                "document.getElementById('android-bridge-status').textContent='Java: launching picker...';"
+                                + "document.getElementById('android-bridge-status').style.background='#f0f';", null);
+                        }
+                        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                        intent.setType("image/*");
+                        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                        startActivityForResult(Intent.createChooser(intent, "选择图片"), FILE_PICKER_REQUEST);
+                    } catch (Exception e) {
+                        final String err = e.getMessage() != null ? e.getMessage().replace("'", "\\'").replace("\"", "\\\"") : "null";
+                        WebView wv = getBridge().getWebView();
+                        if (wv != null) {
+                            wv.evaluateJavascript(
+                                "document.getElementById('android-bridge-status').textContent='Java: " + err + "';"
+                                + "document.getElementById('android-bridge-status').style.background='#c00';", null);
+                        }
+                    }
+                }
             });
         }
     }
