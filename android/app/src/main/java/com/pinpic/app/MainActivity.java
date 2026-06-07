@@ -75,6 +75,15 @@ public class MainActivity extends BridgeActivity {
         json.append("]");
         pendingFilesJson = json.toString();
         Log.d("PinPic", "Files ready, total JSON length: " + pendingFilesJson.length());
+
+        // Signal JS with a tiny evaluateJavascript call (not the full data)
+        String cbId = pendingFileCallbackId;
+        pendingFileCallbackId = null;
+        WebView wv = getBridge().getWebView();
+        if (wv != null) {
+            String jsCall = "window.__nativeFilesReady('" + escape(cbId) + "')";
+            wv.post(() -> wv.evaluateJavascript(jsCall, null));
+        }
     }
 
     private class NativeSaver {

@@ -1929,18 +1929,17 @@
                     });
                 }
 
-                // Native file picker — 轮询获取结果
-                function pollNativeFiles(callbackId) {
-                    const retry = () => setTimeout(() => pollNativeFiles(callbackId), 300);
+                // Native file picker — Java 通知后读取数据
+                window.__nativeFilesReady = function(callbackId) {
                     try {
                         const raw = window.NativeBridge ? window.NativeBridge.getPendingFilesJson() : null;
-                        if (!raw) { retry(); return; }
-                        showToast('收到文件数据: ' + raw.length + ' 字符');
+                        if (!raw) { showToast('无文件数据', true); return; }
+                        showToast('收到: ' + raw.length + ' 字符');
                         processNativeFiles(callbackId, raw);
                     } catch (e) {
-                        showToast('轮询失败: ' + e.message, true);
+                        showToast('读取失败: ' + e.message, true);
                     }
-                }
+                };
 
                 function processNativeFiles(callbackId, raw) {
                     try {
@@ -1979,7 +1978,6 @@
                     document.getElementById('btn-select-images').addEventListener('click', () => {
                         if (window.NativeBridge) {
                             window.NativeBridge.pickImages('replace');
-                            pollNativeFiles('replace');
                         } else if (inputs.file) {
                             inputs.file.click();
                         }
@@ -1989,7 +1987,6 @@
                     inputs.btnAddImages.addEventListener('click', () => {
                         if (window.NativeBridge) {
                             window.NativeBridge.pickImages('append');
-                            pollNativeFiles('append');
                         } else if (inputs.addFile) {
                             inputs.addFile.click();
                         }
@@ -2029,7 +2026,6 @@
                     document.getElementById('btn-select-custom-bg').addEventListener('click', () => {
                         if (window.NativeBridge) {
                             window.NativeBridge.pickImages('custombg');
-                            pollNativeFiles('custombg');
                         } else if (inputs.customBgFile) {
                             inputs.customBgFile.click();
                         }
@@ -2206,7 +2202,6 @@
                         e.preventDefault();
                         if (window.NativeBridge) {
                             window.NativeBridge.pickImages('replace');
-                            pollNativeFiles('replace');
                         } else if (inputs.file) {
                             inputs.file.click();
                         }
