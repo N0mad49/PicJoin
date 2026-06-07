@@ -1378,7 +1378,7 @@
                     shadow: { enabled: false, blur: 20, distance: 10, angle: 45, size: 0, opacity: 0.5, color: '#000000' }
                 };
 
-                let appState = JSON.parse(localStorage.getItem('pinphotograph_settings')) || { ...defaultState };
+                let appState = JSON.parse(localStorage.getItem('picjoin_settings')) || { ...defaultState };
                 // Ensure default scale is 10 if not set or if it was the old default 100 (optional, but safer to just respect saved or default)
                 if (appState.exportScale === undefined) appState.exportScale = 50;
                 if (appState.scaleFree === undefined) appState.scaleFree = 200;
@@ -1532,7 +1532,7 @@
                 }
 
                 function saveSettings() {
-                    localStorage.setItem('pinphotograph_settings', JSON.stringify(appState));
+                    localStorage.setItem('picjoin_settings', JSON.stringify(appState));
                 }
 
                 function requestRender() {
