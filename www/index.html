@@ -125,6 +125,16 @@
             }
         }
 
+        /* File input accessible but invisible for Capacitor */
+        .file-input-trigger {
+            position: fixed;
+            left: -9999px;
+            top: 0;
+            width: 0;
+            height: 0;
+            opacity: 0;
+        }
+
         /* UI Containers */
         .screen {
             display: none;
@@ -651,9 +661,9 @@
         </div>
 
         <!-- Hidden Inputs -->
-        <input type="file" id="file-input" multiple accept="image/*" class="hidden">
-        <input type="file" id="add-file-input" multiple accept="image/*" class="hidden">
-        <input type="file" id="custom-bg-input" accept="image/*" class="hidden">
+        <input type="file" id="file-input" multiple accept="image/*" class="file-input-trigger">
+        <input type="file" id="add-file-input" multiple accept="image/*" class="file-input-trigger">
+        <input type="file" id="custom-bg-input" accept="image/*" class="file-input-trigger">
     </div>
 
     <!-- 2. EDITOR SCREEN -->
@@ -768,7 +778,6 @@
                                 </svg>
                                 <span>添加</span>
                             </button>
-                            <input type="file" id="add-file-input" multiple accept="image/*" class="hidden">
                         </div>
                     </div>
 
