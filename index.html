@@ -2657,17 +2657,9 @@
                                     if (selectionSet.has(idx)) selectionSet.delete(idx);
                                     else selectionSet.add(idx);
                                     lastSelectedIndex = idx;
-
-                                    // If this element was being dragged, cancel that drag
-                                    if (touchCurrentEl === el) {
-                                        el.classList.remove('dragging');
-                                        touchCurrentEl = null;
-                                        document.body.style.overflow = '';
-                                    }
-
                                     renderImageList();
                                     requestRender();
-                                }, 450);
+                                }, 400);
                             };
                             const cancel = () => { if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; } };
                             el.addEventListener('touchstart', start, { passive: true });
@@ -4487,7 +4479,7 @@
                         if (window.NativeBridge) {
                             const base64 = dataUrl.split(',')[1];
                             const ok = window.NativeBridge.saveImage(base64, fileName);
-                            showToast(ok ? '已保存到相册' : '保存失败', !ok);
+                            showToast(ok ? '已保存到相册 Pictures/PinPhotograph' : '保存失败', !ok);
                         } else {
                             const link = document.createElement('a');
                             link.download = fileName;
