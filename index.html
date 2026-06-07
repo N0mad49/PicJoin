@@ -4788,6 +4788,8 @@
                     }
 
                     async function nativeHandleFiles(replace) {
+                        banner.textContent = 'nativeHandleFiles called!';
+                        banner.style.background = '#00f';
                         toggleLoading(true);
                         var files = await openPicker();
                         if (!files || files.length === 0) { toggleLoading(false); return; }
@@ -4841,22 +4843,27 @@
                         setTimeout(function () { if (banner.parentNode) banner.parentNode.removeChild(banner); }, 2000);
                     }
 
-                    function rebind(id, handler) {
+                    function addOverlay(id, handler) {
                         var btn = document.getElementById(id);
                         if (!btn) return;
-                        var c = btn.cloneNode(true);
-                        btn.parentNode.replaceChild(c, btn);
-                        c.addEventListener('click', handler);
+                        btn.style.position = 'relative';
+                        var ov = document.createElement('div');
+                        ov.style.cssText = 'position:absolute;inset:0;z-index:100;cursor:pointer';
+                        ov.addEventListener('click', function (e) { e.stopPropagation(); handler(e); });
+                        // 阻止原始按钮事件
+                        ov.addEventListener('touchstart', function (e) { e.stopPropagation(); });
+                        ov.addEventListener('mousedown', function (e) { e.stopPropagation(); });
+                        btn.appendChild(ov);
                     }
 
                     var iv = setInterval(function () {
                         if (document.getElementById('btn-select-images') && document.getElementById('btn-add-images')) {
                             clearInterval(iv);
-                            rebind('btn-select-images', function () { nativeHandleFiles(true); });
-                            rebind('btn-add-images', function () { nativeHandleFiles(false); });
-                            rebind('btn-back-home', function (e) { e.preventDefault(); nativeHandleFiles(true); });
+                            addOverlay('btn-select-images', function () { nativeHandleFiles(true); });
+                            addOverlay('btn-add-images', function () { nativeHandleFiles(false); });
+                            addOverlay('btn-back-home', function (e) { e.preventDefault(); nativeHandleFiles(true); });
                             var cbg = document.getElementById('btn-select-custom-bg');
-                            if (cbg) rebind('btn-select-custom-bg', function () { nativeHandleFiles(false); });
+                            if (cbg) addOverlay('btn-select-custom-bg', function () { nativeHandleFiles(false); });
                             banner.textContent = 'Buttons patched';
                         }
                     }, 50);
