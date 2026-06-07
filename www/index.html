@@ -150,21 +150,27 @@
         }
 
         /* Dock button — portrait only */
-        #btn-dock-controls { display: none; }
+        #btn-dock-controls {
+            display: none;
+        }
+
         @media (orientation: portrait) {
-            #btn-dock-controls { display: flex; }
+            #btn-dock-controls {
+                display: flex;
+            }
         }
 
         /* Docked state: preview full height, controls at bottom edge */
         #editor-screen.docked #preview-container {
             height: 100% !important;
         }
+
         #editor-screen.docked #controls-container {
             position: absolute !important;
             bottom: 0;
             left: 0;
             right: 0;
-            transform: translateY(calc(100% - 56px)) !important;
+            transform: translateY(calc(100% - 66px)) !important;
         }
 
         /* Fade In Animation */
@@ -696,12 +702,12 @@
                     class="bg-[#3a3a45]/80 backdrop-blur-sm border border-[#555] text-white p-2 rounded-lg shadow hover:bg-[#444] transition-colors disabled:opacity-30">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M3 7v6h6"/>
-                        <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>
+                        <path d="M3 7v6h6" />
+                        <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13" />
                     </svg>
                 </button>
                 <button id="btn-dock-controls" title="折叠操作栏"
-                    class="bg-[#3a3a45]/80 backdrop-blur-sm border border-[#555] text-white p-2 rounded-lg shadow hover:bg-[#444] transition-colors">
+                    class="bg-[#3a3a45]/90 backdrop-blur-sm border border-[#555] text-white p-2 rounded-lg shadow hover:bg-[#444] transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                         id="dock-icon-down">
@@ -774,7 +780,14 @@
                         <div class="flex space-x-2">
                             <button id="btn-batch-delete" title="删除选中"
                                 class="hidden btn-ripple bg-red-700 hover:bg-red-800 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center space-x-1 shadow-sm">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path
+                                        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                    </path>
+                                </svg>
                                 <span id="btn-batch-delete-label">删除</span>
                             </button>
                             <button id="btn-multiselect"
@@ -868,9 +881,8 @@
                 <div id="custom-img-btn-container" class="hidden animate-fade-in">
                     <button id="btn-select-custom-bg"
                         class="w-full btn-ripple bg-[#29499d] text-white text-sm font-medium py-3 px-4 rounded-xl hover:bg-[#345ac5] flex items-center justify-center space-x-2 transition-smooth hover-scale shadow-sm">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                            stroke-linejoin="round">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                             <circle cx="8.5" cy="8.5" r="1.5"></circle>
                             <polyline points="21 15 16 10 5 21"></polyline>
