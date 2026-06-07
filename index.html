@@ -682,6 +682,19 @@
                         <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>
                     </svg>
                 </button>
+                <button id="btn-dock-controls" title="折叠操作栏" style="display:none"
+                    class="bg-[#3a3a45]/80 backdrop-blur-sm border border-[#555] text-white p-2 rounded-lg shadow hover:bg-[#444] transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        id="dock-icon-down">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        id="dock-icon-up" style="display:none">
+                        <polyline points="18 15 12 9 6 15"></polyline>
+                    </svg>
+                </button>
                 <button id="btn-back-home"
                     class="bg-[#3a3a45]/90 backdrop-blur-sm border border-[#555] text-white text-xs font-medium py-2 px-3 rounded-lg shadow hover:bg-[#444] transition-colors">
                     重新选图
@@ -3500,8 +3513,8 @@
                         if (activeImageIndex !== -1 && activeImageIndex < selectedImages.length) {
                             const img = selectedImages[activeImageIndex];
                             const f = img.free;
-                            const handleSize = 100; // Increased touch area for mobile
-                            const touchPad = 50;    // Negative offset for easier grabbing
+                            const handleSize = 160; // 角内触摸区
+                            const touchPad = 80;   // 角外扩展区
 
                             // TL Resize
                             if (pos.x >= f.x - touchPad && pos.x <= f.x + handleSize && pos.y >= f.y - touchPad && pos.y <= f.y + handleSize) {
@@ -4747,9 +4760,31 @@
 
                 init();
 
-                // ---- Capacitor 原生文件选择器（仅 app 内生效）----
+                // ---- Capacitor 专用（仅 app 内生效）----
                 (function () {
                     if (!window.NativeBridge) return;
+
+                    // 折叠操作栏
+                    var btnDock = document.getElementById('btn-dock-controls');
+                    var ctrlPanel = document.getElementById('controls-container');
+                    var iconDown = document.getElementById('dock-icon-down');
+                    var iconUp = document.getElementById('dock-icon-up');
+                    var docked = false;
+                    btnDock.style.display = 'flex';
+                    btnDock.addEventListener('click', function () {
+                        docked = !docked;
+                        if (docked) {
+                            ctrlPanel.style.transform = 'translateY(calc(100% - 28px))';
+                            iconDown.style.display = 'none';
+                            iconUp.style.display = 'block';
+                        } else {
+                            ctrlPanel.style.transform = '';
+                            iconDown.style.display = 'block';
+                            iconUp.style.display = 'none';
+                        }
+                    });
+
+                    // 原生文件选择器
 
                     window._nativeCb = null;
 
