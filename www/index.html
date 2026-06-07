@@ -149,6 +149,11 @@
             transform: scale(0.95);
         }
 
+        /* Controls dock (mobile portrait) */
+        #controls-container.docked {
+            transform: translateY(calc(100% - 32px));
+        }
+
         /* Fade In Animation */
         @keyframes fadeIn {
             from {
@@ -4764,21 +4769,34 @@
                 (function () {
                     if (!window.NativeBridge) return;
 
-                    // 折叠操作栏
+                    // 折叠操作栏（仅竖屏时显示按钮）
+                    var isPortrait = function () { return window.innerHeight > window.innerWidth; };
                     var btnDock = document.getElementById('btn-dock-controls');
-                    var ctrlPanel = document.getElementById('controls-container');
                     var iconDown = document.getElementById('dock-icon-down');
                     var iconUp = document.getElementById('dock-icon-up');
                     var docked = false;
-                    btnDock.style.display = 'flex';
+
+                    if (isPortrait()) btnDock.style.display = 'flex';
+
+                    window.addEventListener('resize', function () {
+                        btnDock.style.display = isPortrait() ? 'flex' : 'none';
+                        if (!isPortrait() && docked) {
+                            docked = false;
+                            document.getElementById('controls-container').classList.remove('docked');
+                            iconDown.style.display = 'block';
+                            iconUp.style.display = 'none';
+                        }
+                    });
+
                     btnDock.addEventListener('click', function () {
                         docked = !docked;
+                        var ctrl = document.getElementById('controls-container');
                         if (docked) {
-                            ctrlPanel.style.transform = 'translateY(calc(100% - 28px))';
+                            ctrl.classList.add('docked');
                             iconDown.style.display = 'none';
                             iconUp.style.display = 'block';
                         } else {
-                            ctrlPanel.style.transform = '';
+                            ctrl.classList.remove('docked');
                             iconDown.style.display = 'block';
                             iconUp.style.display = 'none';
                         }
