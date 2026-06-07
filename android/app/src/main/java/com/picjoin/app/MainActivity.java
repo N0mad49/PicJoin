@@ -1,4 +1,4 @@
-package com.pinpic.app;
+package com.picjoin.app;
 
 import android.content.ContentValues;
 import android.content.Intent;
@@ -132,7 +132,7 @@ public class MainActivity extends BridgeActivity {
                     values.put(MediaStore.Images.Media.DISPLAY_NAME, fileName);
                     values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
                     values.put(MediaStore.Images.Media.RELATIVE_PATH,
-                            Environment.DIRECTORY_PICTURES + "/PinPhotograph");
+                            Environment.DIRECTORY_PICTURES + "/PicJoin");
 
                     Uri uri = getContentResolver().insert(
                             MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
@@ -148,7 +148,7 @@ public class MainActivity extends BridgeActivity {
                     File dir = new File(
                             Environment.getExternalStoragePublicDirectory(
                                     Environment.DIRECTORY_PICTURES),
-                            "PinPhotograph");
+                            "PicJoin");
                     dir.mkdirs();
                     File file = new File(dir, fileName);
                     FileOutputStream fos = new FileOutputStream(file);

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PinPhotograph</title>
+    <title>PicJoin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- HEIC to JPEG converter (WASM/JS) -->
     <script src="https://unpkg.com/heic2any@0.0.4/dist/heic2any.min.js"></script>
@@ -637,15 +637,16 @@
         </div>
 
         <div class="text-center space-y-8 relative z-10 animate-slide-up">
-            <div class="mb-4">
-                <div
-                    class="w-24 h-24 rounded-3xl mx-auto flex items-center justify-center shadow-2xl shadow-[#29499d50] transform rotate-3 hover:rotate-6 transition-smooth overflow-hidden">
-                    <img src="icon.webp" class="w-24 h-24 object-cover" alt="PinPhotograph">
+            <div class="mb-2">
+                <div class="mx-auto flex items-center justify-center">
+                    <img src="iconForMainPage.webp"
+                        class="w-32 h-32 transform rotate-3 hover:scale-110 transition-transform" alt="PicJoin"
+                        style="object-fit: contain">
                 </div>
                 <h1
-                    class="text-3xl font-bold mt-6 tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 py-1">
-                    PinPhotograph</h1>
-                <p class="text-gray-400 text-sm mt-6 font-light">图片拼接工具</p>
+                    class="text-3xl font-bold mt-2 tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 py-1">
+                    PicJoin</h1>
+                <p class="text-gray-400 text-sm mt-1 font-light">图片拼接工具，搭配高斯模糊边框~</p>
             </div>
 
             <div class="space-y-4 w-full max-w-xs mx-auto delay-100 animate-slide-up"
@@ -658,15 +659,15 @@
                     </svg>
                     <span class="text-lg">选择图片</span>
                 </button>
-                <p class="text-center text-gray-500 text-sm mt-4 font-light">支持直接拖拽图片到此页面</p>
+                <p id="drag-hint" class="text-center text-gray-500 text-sm mt-4 font-light">支持拖拽图片到此页面</p>
 
             </div>
         </div>
 
         <!-- Home footer: project link (显示为「项目地址」，点击在新窗口打开) -->
         <div class="absolute bottom-4 left-0 right-0 text-center z-20 pointer-events-auto">
-            <a id="home-project-link" href="https://github.com/WarpTraveller/PinPhotograph" target="_blank"
-                rel="noopener" class="text-[#74a3ff] hover:underline font-medium" title="在新窗口打开项目源码（GitHub）">项目地址</a>
+            <a id="home-project-link" href="https://github.com/N0mad49/PicJoin" target="_blank" rel="noopener"
+                class="text-[#74a3ff] hover:underline font-medium" title="在新窗口打开项目源码（GitHub）">项目地址</a>
 
         </div>
 
@@ -1344,7 +1345,7 @@
 
             <script>
                 /**
-                 * PinPhotograph Logic v2.1
+                 * PicJoin Logic v2.1
                  */
 
                 // --- Constants ---
@@ -3233,7 +3234,7 @@
                                             const name = (file.name || 'converted').replace(/\.[^/.]+$/, '') + '.jpg';
                                             return new File([blob], name, { type: 'image/jpeg' });
                                         } catch (convErr) {
-                                            console.error('[PinPic] HEIC conversion error:', convErr);
+                                            console.error('[PicJoin] HEIC conversion error:', convErr);
                                             return null;
                                         }
                                     }
@@ -3360,7 +3361,7 @@
                             requestRender();
 
                         } catch (err) {
-                            console.error('[PinPic] Error loading images:', err);
+                            console.error('[PicJoin] Error loading images:', err);
                             showToast('图片加载失败', true);
                         } finally {
                             inputs.file.value = '';
@@ -4513,12 +4514,12 @@
                         const dataUrl = canvas.toDataURL('image/jpeg', qualityVal);
                         const now = new Date();
                         const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
-                        const fileName = `PinPhotograph-${timestamp}.jpg`;
+                        const fileName = `PicJoin-${timestamp}.jpg`;
 
                         if (window.NativeBridge) {
                             const base64 = dataUrl.split(',')[1];
                             const ok = window.NativeBridge.saveImage(base64, fileName);
-                            showToast(ok ? '已保存到相册 Pictures/PinPhotograph' : '保存失败', !ok);
+                            showToast(ok ? '已保存到相册 Pictures/PicJoin' : '保存失败', !ok);
                         } else {
                             const link = document.createElement('a');
                             link.download = fileName;
@@ -4809,6 +4810,10 @@
 
                     // 原生文件选择器
                     if (!window.NativeBridge) return;
+
+                    // App 内隐藏拖拽提示
+                    var dragHint = document.getElementById('drag-hint');
+                    if (dragHint) dragHint.style.display = 'none';
 
                     window._nativeCb = null;
 

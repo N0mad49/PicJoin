@@ -1,11 +1,11 @@
-# PinPhotograph 图片拼接编辑器
+# PicJoin 图片拼接编辑器
 
 ## 概述
-PinPhotograph 是一款功能强大的图片拼接编辑网页应用，支持两种独特的编辑模式：条形拼接和自由位置布局。应用提供丰富的边框自定义选项，最独特的功能是高斯模糊背景和高级图层混合效果。
+PicJoin 是一款功能强大的图片拼接编辑网页应用，支持两种独特的编辑模式：条形拼接和自由位置布局。应用提供丰富的边框自定义选项，最独特的功能是高斯模糊背景和高级图层混合效果。
 
 ### 访问网址
 
-https://n0mad49.github.io/PinPhotograph/
+https://n0mad49.github.io/PicJoin/
 
 ### 效果示意
 ## 条形拼接模式
@@ -83,4 +83,4 @@ https://n0mad49.github.io/PinPhotograph/
 
 ---
 
-_PinPhotograph 持续更新中，欢迎反馈使用体验和建议！_
+_PicJoin 持续更新中，欢迎反馈使用体验和建议！_

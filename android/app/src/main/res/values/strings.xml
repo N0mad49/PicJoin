@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">PinPhotograph</string>
-    <string name="title_activity_main">PinPhotograph</string>
-    <string name="package_name">com.pinpic.app</string>
-    <string name="custom_url_scheme">com.pinpic.app</string>
+    <string name="app_name">PicJoin</string>
+    <string name="title_activity_main">PicJoin</string>
+    <string name="package_name">com.picjoin.app</string>
+    <string name="custom_url_scheme">com.picjoin.app</string>
 </resources>

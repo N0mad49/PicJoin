@@ -1,26 +1,27 @@
 {
   "name": "pinpic",
   "version": "1.0.0",
-  "description": "PinPhotograph 是一款功能强大的图片拼接编辑网页应用，支持两种独特的编辑模式：条形拼接和自由位置布局。应用提供丰富的边框自定义选项，最独特的功能是高斯模糊背景和高级图层混合效果。",
+  "description": "PicJoin 是一款功能强大的图片拼接编辑网页应用，支持两种独特的编辑模式：条形拼接和自由位置布局。应用提供丰富的边框自定义选项，最独特的功能是高斯模糊背景和高级图层混合效果。",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/N0mad49/PinPhotograph.git"
+    "url": "git+https://github.com/N0mad49/PicJoin.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "bugs": {
-    "url": "https://github.com/N0mad49/PinPhotograph/issues"
+    "url": "https://github.com/N0mad49/PicJoin/issues"
   },
-  "homepage": "https://github.com/N0mad49/PinPhotograph#readme",
+  "homepage": "https://github.com/N0mad49/PicJoin#readme",
   "dependencies": {
     "@capacitor/android": "^8.4.0",
     "@capacitor/cli": "^8.4.0",
-    "@capacitor/core": "^8.4.0"
+    "@capacitor/core": "^8.4.0",
+    "sharp": "^0.34.5"
   }
 }
