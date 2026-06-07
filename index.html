@@ -631,7 +631,7 @@
             <div class="space-y-4 w-full max-w-xs mx-auto delay-100 animate-slide-up"
                 style="opacity: 0; animation-fill-mode: forwards;">
                 <button id="btn-select-images"
-                    class="w-full btn-ripple bg-[#29499d] hover:bg-[#1f3a8a] text-white font-medium py-4 px-6 rounded-2xl shadow-lg shadow-[#29499d40] flex items-center justify-center space-x-3 transition-smooth hover-scale group relative overflow-hidden">
+                    class="w-full btn-ripple bg-[#29499d] hover:bg-[#1f3a8a] text-white font-medium py-4 px-6 rounded-2xl shadow-lg shadow-[#29499d40] flex items-center justify-center space-x-3 transition-smooth hover-scale group">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 group-hover:scale-110 transition-transform"
                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -650,15 +650,11 @@
 
         </div>
 
+        <!-- Hidden Inputs -->
+        <input type="file" id="file-input" multiple accept="image/*" class="hidden">
+        <input type="file" id="add-file-input" multiple accept="image/*" class="hidden">
+        <input type="file" id="custom-bg-input" accept="image/*" class="hidden">
     </div>
-
-    <!-- File Inputs (off-screen, usable by .click()) -->
-    <input type="file" id="file-input" multiple accept="image/*" class="hidden"
-        onchange="handleFiles(event, true)">
-    <input type="file" id="add-file-input" multiple accept="image/*" class="hidden"
-        onchange="handleFiles(event, false)">
-    <input type="file" id="custom-bg-input" accept="image/*" class="hidden"
-        onchange="handleCustomBgSelection(event)">
 
     <!-- 2. EDITOR SCREEN -->
     <!-- bg-[#202025] matches preview color so rounded corners of controls look correct -->
@@ -763,7 +759,7 @@
                                 <span>多选</span>
                             </button>
                             <button id="btn-add-images"
-                                class="btn-ripple bg-[#29499d] hover:bg-[#345ac5] text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center space-x-1 shadow-sm relative overflow-hidden">
+                                class="btn-ripple bg-[#29499d] hover:bg-[#345ac5] text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center space-x-1 shadow-sm">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
                                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                     stroke-linejoin="round">
@@ -772,6 +768,7 @@
                                 </svg>
                                 <span>添加</span>
                             </button>
+                            <input type="file" id="add-file-input" multiple accept="image/*" class="hidden">
                         </div>
                     </div>
 
@@ -839,7 +836,7 @@
                 <!-- Custom Image Selector (仅自定义背景) -->
                 <div id="custom-img-btn-container" class="hidden animate-fade-in">
                     <button id="btn-select-custom-bg"
-                        class="w-full btn-ripple bg-[#29499d] text-white text-sm font-medium py-3 px-4 rounded-xl hover:bg-[#345ac5] flex items-center justify-center space-x-2 transition-smooth hover-scale shadow-sm relative overflow-hidden">
+                        class="w-full btn-ripple bg-[#29499d] text-white text-sm font-medium py-3 px-4 rounded-xl hover:bg-[#345ac5] flex items-center justify-center space-x-2 transition-smooth hover-scale shadow-sm">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
                             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                             stroke-linejoin="round">
@@ -1931,81 +1928,13 @@
                     });
                 }
 
-                // Native file picker — visibility 事件驱动轮询
-                window._pendingPickerId = null;
-
-                function tryGetNativeFiles() {
-                    const cbId = window._pendingPickerId;
-                    if (!cbId || !window.NativeBridge) return;
-                    if (!window.NativeBridge.checkFilesReady()) return;
-                    try {
-                        const raw = window.NativeBridge.getPendingFilesJson();
-                        if (!raw) { showToast('无文件数据', true); return; }
-                        showToast('收到: ' + raw.length + ' 字符');
-                        processNativeFiles(cbId, raw);
-                        window._pendingPickerId = null;
-                    } catch (e) {
-                        showToast('读取失败: ' + e.message, true);
-                    }
-                }
-
-                document.addEventListener('visibilitychange', () => {
-                    if (document.visibilityState === 'visible') tryGetNativeFiles();
-                });
-
-                function processNativeFiles(callbackId, raw) {
-                    try {
-                        const files = JSON.parse(raw);
-                        if (!files || !files.length) { showToast('没有文件数据', true); return; }
-                        showToast('解析: ' + files.length + ' 个文件');
-
-                        const dataTransfer = new DataTransfer();
-                        files.forEach((f, i) => {
-                            try {
-                                const byteChars = atob(f.data);
-                                const byteArr = new Uint8Array(byteChars.length);
-                                for (let j = 0; j < byteChars.length; j++) byteArr[j] = byteChars.charCodeAt(j);
-                                const blob = new Blob([byteArr], { type: f.type || 'image/jpeg' });
-                                dataTransfer.items.add(new File([blob], f.name || `image_${i}.jpg`, { type: f.type || 'image/jpeg' }));
-                            } catch (e) {
-                                showToast('文件 ' + i + ' 处理失败: ' + e.message, true);
-                            }
-                        });
-
-                        const count = dataTransfer.files.length;
-                        showToast('创建 ' + count + ' 个 File，开始处理');
-
-                        if (callbackId === 'custombg' && count > 0) {
-                            handleCustomBgSelection({ target: { files: dataTransfer.files } });
-                        } else {
-                            handleFiles({ target: { files: dataTransfer.files } }, callbackId === 'replace');
-                        }
-                    } catch (err) {
-                        showToast('解析失败: ' + err.message, true);
-                    }
-                }
-
                 function setupEventListeners() {
-                    // 选择图片
                     document.getElementById('btn-select-images').addEventListener('click', () => {
-                        if (window.NativeBridge) {
-                            window._pendingPickerId = 'replace';
-                            window.NativeBridge.pickImages('replace');
-                            setTimeout(tryGetNativeFiles, 50);
-                        } else if (inputs.file) {
-                            inputs.file.click();
-                        }
+                        inputs.file.click();
                     });
 
-                    // 添加图片
                     inputs.btnAddImages.addEventListener('click', () => {
-                        if (window.NativeBridge) {
-                            window._pendingPickerId = 'append';
-                            window.NativeBridge.pickImages('append');
-                            setTimeout(tryGetNativeFiles, 50);
-                        } else if (inputs.addFile) {
-                            inputs.addFile.click();
-                        }
+                        inputs.addFile.click();
                     });
 
                     // Multi-select toggle button
@@ -2035,16 +1964,13 @@
                         });
                     }
 
-                    // 自定义背景
+                    inputs.file.addEventListener('change', (e) => handleFiles(e, true));
+                    inputs.addFile.addEventListener('change', (e) => handleFiles(e, false));
+
                     document.getElementById('btn-select-custom-bg').addEventListener('click', () => {
-                        if (window.NativeBridge) {
-                            window._pendingPickerId = 'custombg';
-                            window.NativeBridge.pickImages('custombg');
-                            setTimeout(tryGetNativeFiles, 50);
-                        } else if (inputs.customBgFile) {
-                            inputs.customBgFile.click();
-                        }
+                        inputs.customBgFile.click();
                     });
+                    inputs.customBgFile.addEventListener('change', handleCustomBgSelection);
 
                     inputs.toggleOuterBorder.addEventListener('change', (e) => {
                         appState.outerBorder = e.target.checked;
@@ -2214,13 +2140,8 @@
 
                     inputs.btnHome.addEventListener('click', (e) => {
                         e.preventDefault();
-                        if (window.NativeBridge) {
-                            window._pendingPickerId = 'replace';
-                            window.NativeBridge.pickImages('replace');
-                            setTimeout(tryGetNativeFiles, 50);
-                        } else if (inputs.file) {
-                            inputs.file.click();
-                        }
+                        // 直接打开选图对话框（不返回主页）
+                        if (inputs.file) inputs.file.click();
                     });
 
                     // Undo button
@@ -3228,7 +3149,7 @@
 
                 async function handleFiles(e, isReplace = false) {
                     let files = Array.from(e.target.files || []);
-                    if (files.length === 0) { showToast('没有文件', true); return; }
+                    if (files.length === 0) return;
 
                     // Limit check
                     const MAX_IMAGES = 20;
@@ -4551,44 +4472,26 @@
                     ctx.restore();
                 }
 
-                async function handleSave() {
+                function handleSave() {
                     if (!selectedImages.length) return;
                     toggleLoading(true);
-                    // Yield to let loading animation show
-                    await new Promise(r => setTimeout(r, 50));
-
-                    renderPreview(true);
-                    const canvas = inputs.previewCanvas;
-                    const qualityVal = Math.max(0.1, Math.min(1.0, appState.exportQuality / 100));
-                    const dataUrl = canvas.toDataURL('image/jpeg', qualityVal);
-
-                    const now = new Date();
-                    const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
-                    const fileName = `PinPhotograph-${timestamp}.jpg`;
-
-                    // Try native save (Capacitor / Android WebView)
-                    if (window.NativeBridge) {
-                        const base64 = dataUrl.split(',')[1];
-                        const ok = window.NativeBridge.saveImage(base64, fileName);
-                        if (ok) {
-                            showToast('已保存到相册');
-                        } else {
-                            showToast('保存失败', true);
-                        }
-                    } else {
-                        // Browser fallback: download link
+                    setTimeout(() => {
+                        renderPreview(true);
+                        const canvas = inputs.previewCanvas;
                         const link = document.createElement('a');
-                        link.download = fileName;
-                        link.href = dataUrl;
+                        const now = new Date();
+                        const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
+
+                        link.download = `PinPhotograph-${timestamp}.jpg`;
+                        const qualityVal = Math.max(0.1, Math.min(1.0, appState.exportQuality / 100));
+                        link.href = canvas.toDataURL('image/jpeg', qualityVal);
                         document.body.appendChild(link);
                         link.click();
                         document.body.removeChild(link);
+                        requestRender();
+                        toggleLoading(false);
                         showToast('输出已完成', false);
-                    }
-
-                    requestRender();
-                    toggleLoading(false);
-                }
+                    }, 300);
                 }
 
                 function toggleLoading(show, msg) {
