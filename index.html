@@ -4748,7 +4748,120 @@
 
                 init();
             </script>
-            <script src="android-bridge.js"></script>
+            <script>
+                // ── Android Bridge (内联，排除文件加载问题) ──
+                (function () {
+                    var banner = document.createElement('div');
+                    banner.id = 'android-bridge-status';
+                    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;padding:6px 12px;font-size:13px;text-align:center;color:#fff;background:#29499d';
+                    banner.textContent = 'Bridge loaded';
+                    document.body.appendChild(banner);
+
+                    if (!window.NativeBridge) {
+                        banner.textContent = 'NativeBridge unavailable';
+                        banner.style.background = '#888';
+                        return;
+                    }
+                    banner.textContent = 'NativeBridge connected';
+                    banner.style.background = '#1a6b3c';
+
+                    var pendingId = 0;
+                    window.__nativeFileResult = function (cid, files) {
+                        var cb = window['__fcb_' + cid];
+                        if (cb) { cb(files); delete window['__fcb_' + cid]; }
+                    };
+
+                    function openPicker() {
+                        var id = 'p' + (++pendingId);
+                        return new Promise(function (resolve) {
+                            var timer = setTimeout(function () {
+                                delete window['__fcb_' + id];
+                                resolve(null);
+                                banner.textContent = 'Picker timeout';
+                                banner.style.background = '#c00';
+                            }, 120000);
+                            window['__fcb_' + id] = function (f) { clearTimeout(timer); resolve(f); };
+                            banner.textContent = 'Opening picker...';
+                            banner.style.background = '#e68a00';
+                            NativeBridge.pickImages(id);
+                        });
+                    }
+
+                    async function nativeHandleFiles(replace) {
+                        toggleLoading(true);
+                        var files = await openPicker();
+                        if (!files || files.length === 0) { toggleLoading(false); return; }
+                        banner.textContent = 'Loading ' + files.length + ' images...';
+
+                        var loaded = [];
+                        for (var i = 0; i < files.length; i++) {
+                            var img = new Image();
+                            await new Promise(function (resolve, reject) {
+                                img.onload = resolve;
+                                img.onerror = function () { banner.textContent = 'Image load failed'; banner.style.background = '#c00'; reject(); };
+                                img.src = files[i].data;
+                            });
+                            loaded.push(img);
+                        }
+                        var wrapped = [];
+                        for (var i = 0; i < loaded.length; i++) {
+                            var thumb = null;
+                            try {
+                                if (window.createImageBitmap) {
+                                    thumb = await createImageBitmap(loaded[i], 0, 0, loaded[i].width, loaded[i].height, { resizeWidth: 80, resizeHeight: 80, resizeQuality: 'medium' });
+                                }
+                            } catch (_) {}
+                            if (!thumb) {
+                                var tc = document.createElement('canvas');
+                                tc.width = 80; tc.height = 80;
+                                var tctx = tc.getContext('2d');
+                                var s = Math.min(loaded[i].width, loaded[i].height);
+                                tctx.drawImage(loaded[i], (loaded[i].width - s) / 2, (loaded[i].height - s) / 2, s, s, 0, 0, 80, 80);
+                                thumb = tc;
+                            }
+                            wrapped.push({ img: loaded[i], thumbnail: thumb, width: loaded[i].width, height: loaded[i].height, edit: { sat: 100, bri: 0, con: 100 }, free: { x: 0, y: 0, w: 0, h: 0 } });
+                            await new Promise(function (r) { return setTimeout(r, 10); });
+                        }
+                        if (replace) { originalImageObjects = wrapped; }
+                        else { originalImageObjects = [].concat(originalImageObjects, wrapped); }
+                        recalculateDimensions();
+                        inputs.imgCount.innerText = originalImageObjects.length;
+                        renderImageList();
+                        generateStitchedBase();
+                        if (replace) {
+                            var hm = document.getElementById('home-screen');
+                            var ed = document.getElementById('editor-screen');
+                            if (hm) hm.classList.remove('active');
+                            if (ed) ed.classList.add('active');
+                        }
+                        requestRender();
+                        toggleLoading(false);
+                        banner.textContent = 'Loaded ' + wrapped.length + ' images';
+                        banner.style.background = '#1a6b3c';
+                        setTimeout(function () { if (banner.parentNode) banner.parentNode.removeChild(banner); }, 2000);
+                    }
+
+                    function rebind(id, handler) {
+                        var btn = document.getElementById(id);
+                        if (!btn) return;
+                        var c = btn.cloneNode(true);
+                        btn.parentNode.replaceChild(c, btn);
+                        c.addEventListener('click', handler);
+                    }
+
+                    var iv = setInterval(function () {
+                        if (document.getElementById('btn-select-images') && document.getElementById('btn-add-images')) {
+                            clearInterval(iv);
+                            rebind('btn-select-images', function () { nativeHandleFiles(true); });
+                            rebind('btn-add-images', function () { nativeHandleFiles(false); });
+                            rebind('btn-back-home', function (e) { e.preventDefault(); nativeHandleFiles(true); });
+                            var cbg = document.getElementById('btn-select-custom-bg');
+                            if (cbg) rebind('btn-select-custom-bg', function () { nativeHandleFiles(false); });
+                            banner.textContent = 'Buttons patched';
+                        }
+                    }, 50);
+                })();
+            </script>
 </body>
 
 </html>
