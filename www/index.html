@@ -4833,8 +4833,21 @@
                             });
                             var cb = window._nativeCb;
                             window._nativeCb = null;
-                            if (cb === 'custombg') {
-                                handleCustomBgSelection({ target: { files: dt.files } });
+                            if (cb === 'custombg' && fileObjs.length > 0) {
+                                // 自定义背景直接用 base64，不通过 Blob/File 中转
+                                var f = fileObjs[0];
+                                var img = new Image();
+                                img.onload = function () {
+                                    customBgImage = img;
+                                    if (appState.mode === 'custom') requestRender();
+                                    toggleLoading(false);
+                                };
+                                img.onerror = function () {
+                                    toggleLoading(false);
+                                    showToast('背景图片加载失败', true);
+                                };
+                                toggleLoading(true);
+                                img.src = 'data:' + (f.type || 'image/jpeg') + ';base64,' + f.data;
                             } else {
                                 handleFiles({ target: { files: dt.files } }, cb === 'replace');
                             }
