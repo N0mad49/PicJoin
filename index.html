@@ -125,6 +125,34 @@
             }
         }
 
+        @keyframes wobble {
+            0%, 100% { transform: rotate(3deg); }
+            20% { transform: rotate(-4deg); }
+            40% { transform: rotate(5deg); }
+            60% { transform: rotate(-3deg); }
+            80% { transform: rotate(2deg); }
+        }
+        .home-icon:hover, .home-icon:active {
+            animation: wobble 0.6s ease-in-out;
+        }
+
+        /* Layout switch sliding highlight */
+        .layout-switch-wrap {
+            position: relative;
+        }
+        .layout-switch-wrap::after {
+            content: '';
+            position: absolute;
+            top: 6px; bottom: 6px;
+            left: var(--slider-left, 6px);
+            width: var(--slider-width, calc(50% - 9px));
+            background: #29499d;
+            border-radius: 10px;
+            z-index: 0;
+            transition: left 0.35s cubic-bezier(0.4, 0, 0.2, 1), width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .layout-switch-btn { position: relative; z-index: 1; }
+
         /* UI Containers */
         .screen {
             display: none;
@@ -165,6 +193,10 @@
             height: 100% !important;
         }
 
+        #editor-screen.docked #controls-container,
+        #controls-container {
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
         #editor-screen.docked #controls-container {
             position: absolute !important;
             bottom: 0;
@@ -640,7 +672,7 @@
             <div class="mb-2">
                 <div class="mx-auto flex items-center justify-center">
                     <img src="iconForMainPage.webp"
-                        class="w-52 h-52 transform rotate-3 hover:scale-110 transition-transform" alt="PicJoin"
+                        class="home-icon w-52 h-52 transform rotate-3" alt="PicJoin"
                         style="object-fit: contain">
                 </div>
                 <h1
@@ -716,13 +748,9 @@
                         <polyline points="18 15 12 9 6 15"></polyline>
                     </svg>
                 </button>
-                <button id="btn-back-home" title="重新选图"
-                    class="bg-[#3a3a45]/90 backdrop-blur-sm border border-[#555] text-white p-2 rounded-lg shadow hover:bg-[#444] transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="23 4 23 10 17 10"></polyline>
-                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
-                    </svg>
+                <button id="btn-back-home"
+                    class="bg-[#3a3a45]/90 backdrop-blur-sm border border-[#555] text-white text-xs font-medium py-2 px-3 rounded-lg shadow hover:bg-[#444] transition-colors">
+                    重新选图
                 </button>
                 <button id="btn-save" title="导出图片"
                     class="bg-[#29499d] text-white text-xs font-bold py-2 px-3 rounded-lg shadow hover:bg-[#345ac5] transition-colors flex items-center justify-center">
@@ -739,7 +767,7 @@
             <div class="flex-1 overflow-y-auto p-6 pt-16 space-y-6 controls-scroll pb-20">
 
                 <!-- Layout Mode Selection -->
-                <div class="bg-[#3a3a45] p-1.5 rounded-xl flex space-x-1 mb-2">
+                <div class="bg-[#3a3a45] p-1.5 rounded-xl flex space-x-1 mb-2 layout-switch-wrap">
                     <div id="mode-strip" class="layout-switch-btn active" onclick="switchLayoutMode('strip')">条形拼接</div>
                     <div id="mode-free" class="layout-switch-btn inactive" onclick="switchLayoutMode('free')">自由位置</div>
                 </div>
@@ -1818,6 +1846,9 @@
                     if (appState.layoutMode === 'strip') {
                         stripBtn.classList.add('active'); stripBtn.classList.remove('inactive');
                         freeBtn.classList.add('inactive'); freeBtn.classList.remove('active');
+                        // Sliding indicator position
+                        document.querySelector('.layout-switch-wrap').style.setProperty('--slider-left', '6px');
+                        document.querySelector('.layout-switch-wrap').style.setProperty('--slider-width', 'calc(50% - 9px)');
                         inputs.optFreeMode.classList.add('hidden');
                         inputs.ctrlOuterBorder.classList.remove('hidden');
                         if (borderWidthCtrl) borderWidthCtrl.classList.remove('hidden');
@@ -1828,6 +1859,9 @@
                     } else {
                         freeBtn.classList.add('active'); freeBtn.classList.remove('inactive');
                         stripBtn.classList.add('inactive'); stripBtn.classList.remove('active');
+                        // Sliding indicator position (right)
+                        document.querySelector('.layout-switch-wrap').style.setProperty('--slider-left', 'calc(50% + 3px)');
+                        document.querySelector('.layout-switch-wrap').style.setProperty('--slider-width', 'calc(50% - 9px)');
                         inputs.optFreeMode.classList.remove('hidden');
                         inputs.ctrlOuterBorder.classList.add('hidden');
                         if (borderWidthCtrl) borderWidthCtrl.classList.add('hidden');
@@ -2611,7 +2645,7 @@
                         const btnReplace = document.createElement('button');
                         btnReplace.className = 'p-2 rounded text-gray-400 hover:text-white hover:bg-gray-700 cursor-pointer';
                         btnReplace.title = '替换图片';
-                        btnReplace.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>`;
+                        btnReplace.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>`;
                         btnReplace.onclick = (e) => {
                             e.stopPropagation();
                             // Trigger hidden file input for replacement
