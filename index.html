@@ -3392,10 +3392,28 @@
                     updateResolutionDisplay();
                 }
 
-                function handleCustomBgSelection(e) {
-                    const file = e.target.files[0];
+                async function handleCustomBgSelection(e) {
+                    let file = e.target.files[0];
                     if (!file) return;
                     toggleLoading(true);
+
+                    // HEIC 转换
+                    const isHeic = () => {
+                        const ext = (file.name || '').split('.').pop().toLowerCase();
+                        const t = (file.type || '').toLowerCase();
+                        return ['heic', 'heif'].includes(ext) || t.includes('heic') || t.includes('heif');
+                    };
+                    if (isHeic() && typeof heic2any !== 'undefined') {
+                        try {
+                            const blob = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.92 });
+                            file = new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' });
+                        } catch (err) {
+                            toggleLoading(false);
+                            showToast('HEIC 转换失败', true);
+                            return;
+                        }
+                    }
+
                     const img = new Image();
                     img.onload = () => {
                         customBgImage = img;

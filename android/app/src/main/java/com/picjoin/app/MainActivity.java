@@ -2,16 +2,12 @@ package com.picjoin.app;
 
 import android.content.ContentValues;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.ImageDecoder;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
@@ -106,57 +102,16 @@ public class MainActivity extends BridgeActivity {
             String mime = getContentResolver().getType(uri);
             String name = uri.getLastPathSegment();
             if (name == null) name = "image_" + index;
-            boolean isHeic = (mime != null && (mime.contains("heic") || mime.contains("heif")))
-                    || name.toLowerCase().endsWith(".heic")
-                    || name.toLowerCase().endsWith(".heif");
 
-            String b64;
+            InputStream is = getContentResolver().openInputStream(uri);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            byte[] buf = new byte[16384];
+            int n;
+            while ((n = is.read(buf)) != -1) baos.write(buf, 0, n);
+            is.close();
+            String b64 = Base64.encodeToString(baos.toByteArray(), Base64.NO_WRAP);
             String outMime = (mime != null && !mime.isEmpty()) ? mime : "image/jpeg";
-
-            if (isHeic) {
-                Bitmap bitmap = null;
-                // Try ImageDecoder first (API 28+), fallback to BitmapFactory
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                    try {
-                        bitmap = ImageDecoder.decodeBitmap(
-                                ImageDecoder.createSource(getContentResolver(), uri));
-                    } catch (Exception e) {
-                        Log.w("PicJoin", "ImageDecoder failed, trying BitmapFactory", e);
-                    }
-                }
-                if (bitmap == null) {
-                    ParcelFileDescriptor pfd = getContentResolver().openFileDescriptor(uri, "r");
-                    if (pfd != null) {
-                        bitmap = BitmapFactory.decodeFileDescriptor(pfd.getFileDescriptor());
-                        pfd.close();
-                    }
-                }
-                if (bitmap == null) {
-                    InputStream is = getContentResolver().openInputStream(uri);
-                    bitmap = BitmapFactory.decodeStream(is);
-                    is.close();
-                }
-                if (bitmap == null) {
-                    Log.e("PicJoin", "Failed to decode HEIC: " + name);
-                    return null;
-                }
-                ByteArrayOutputStream jpegStream = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 92, jpegStream);
-                bitmap.recycle();
-                b64 = Base64.encodeToString(jpegStream.toByteArray(), Base64.NO_WRAP);
-                outMime = "image/jpeg";
-                name = name.replaceFirst("\\.[^.]+$", "") + ".jpg";
-                Log.d("PicJoin", "HEIC→JPEG: " + name + " base64=" + b64.length());
-            } else {
-                InputStream is = getContentResolver().openInputStream(uri);
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                byte[] buf = new byte[16384];
-                int n;
-                while ((n = is.read(buf)) != -1) baos.write(buf, 0, n);
-                is.close();
-                b64 = Base64.encodeToString(baos.toByteArray(), Base64.NO_WRAP);
-                Log.d("PicJoin", "File " + index + ": " + name + " base64=" + b64.length());
-            }
+            Log.d("PicJoin", "File " + index + ": " + name + " mime=" + outMime + " base64=" + b64.length());
 
             return "{\"name\":\"" + escape(name) + "\",\"type\":\""
                     + escape(outMime) + "\",\"data\":\"" + b64 + "\"}";
