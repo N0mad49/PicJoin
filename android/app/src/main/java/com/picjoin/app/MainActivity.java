@@ -2,6 +2,8 @@ package com.picjoin.app;
 
 import android.content.ContentValues;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -100,21 +102,39 @@ public class MainActivity extends BridgeActivity {
     private String readFileAsJson(Uri uri, int index) {
         try {
             String mime = getContentResolver().getType(uri);
-            InputStream is = getContentResolver().openInputStream(uri);
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            byte[] buf = new byte[16384];
-            int n;
-            while ((n = is.read(buf)) != -1) baos.write(buf, 0, n);
-            is.close();
-            String b64 = Base64.encodeToString(baos.toByteArray(), Base64.NO_WRAP);
-            String name = "image_" + index + ".jpg";
+            boolean isHeic = mime != null && (mime.contains("heic") || mime.contains("heif"));
+            String name = "image_" + index + (isHeic ? ".jpg" : "");
             String dispName = uri.getLastPathSegment();
             if (dispName != null) name = dispName;
-            Log.d("PinPic", "File " + index + ": " + name + " base64=" + b64.length());
+
+            String b64;
+            String outMime = mime != null ? mime : "image/jpeg";
+
+            if (isHeic) {
+                // Convert HEIC to JPEG via Bitmap
+                InputStream is = getContentResolver().openInputStream(uri);
+                Bitmap bitmap = BitmapFactory.decodeStream(is);
+                is.close();
+                if (bitmap == null) return null;
+                ByteArrayOutputStream jpegStream = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 92, jpegStream);
+                bitmap.recycle();
+                b64 = Base64.encodeToString(jpegStream.toByteArray(), Base64.NO_WRAP);
+                outMime = "image/jpeg";
+                Log.d("PicJoin", "HEIC→JPEG: " + name + " base64=" + b64.length());
+            } else {
+                InputStream is = getContentResolver().openInputStream(uri);
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                byte[] buf = new byte[16384];
+                int n;
+                while ((n = is.read(buf)) != -1) baos.write(buf, 0, n);
+                is.close();
+                b64 = Base64.encodeToString(baos.toByteArray(), Base64.NO_WRAP);
+                Log.d("PicJoin", "File " + index + ": " + name + " base64=" + b64.length());
+            }
 
             return "{\"name\":\"" + escape(name) + "\",\"type\":\""
-                    + (mime != null ? escape(mime) : "image/jpeg")
-                    + "\",\"data\":\"" + b64 + "\"}";
+                    + escape(outMime) + "\",\"data\":\"" + b64 + "\"}";
         } catch (Exception e) {
             Log.e("PinPic", "File " + index + " read error", e);
             return null;
