@@ -269,53 +269,32 @@
             animation-delay: 300ms;
         }
 
-        .controls-scroll::-webkit-scrollbar {
+        /* Unified scrollbar for all scrollable areas */
+        ::-webkit-scrollbar {
             width: 6px;
             height: 0px;
         }
-
-        .controls-scroll::-webkit-scrollbar-track {
+        ::-webkit-scrollbar-track {
             background: rgba(0, 0, 0, 0.12);
             border-radius: 4px;
         }
-
-        .controls-scroll::-webkit-scrollbar-thumb {
+        ::-webkit-scrollbar-thumb {
             background: #555;
             border-radius: 4px;
             border: 1px solid rgba(0, 0, 0, 0);
             background-clip: padding-box;
         }
+        /* Firefox */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #555 rgba(0, 0, 0, 0.12);
+        }
 
-        /* Consistent scrollbar for image list — same style as controls-scroll */
         #image-list-container {
             overflow-x: hidden;
             overflow-y: scroll;
             scrollbar-gutter: stable;
             -webkit-overflow-scrolling: touch;
-        }
-
-        #image-list-container::-webkit-scrollbar {
-            width: 6px;
-            height: 0px;
-        }
-
-        #image-list-container::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.12);
-            border-radius: 4px;
-        }
-
-        #image-list-container::-webkit-scrollbar-thumb {
-            background: #555;
-            border-radius: 4px;
-            border: 1px solid rgba(0, 0, 0, 0);
-            background-clip: padding-box;
-        }
-
-        /* Firefox — unified */
-        .controls-scroll,
-        #image-list-container {
-            scrollbar-width: thin;
-            scrollbar-color: #555 rgba(0, 0, 0, 0.12);
         }
 
         .btn-ripple {
@@ -4927,9 +4906,17 @@
                         cropImg = originalImageObjects[cropIndex].img;
                         cropRect = { x: 0, y: 0, w: cropImg.width, h: cropImg.height };
                         lockRatio = 0;
+                        inputs.drawer.classList.remove('active');
                         cropModal.classList.add('active');
                         updateRatioBtns();
                         renderCrop();
+                    }
+
+                    function closeCrop() {
+                        cropModal.classList.remove('active');
+                        cropImg = null; cropIndex = -1;
+                        // Re-open edit drawer
+                        if (currentlyEditingIndex >= 0) inputs.drawer.classList.add('active');
                     }
 
                     function closeCrop() {
@@ -5006,22 +4993,13 @@
                     function applyAspectLock(dir, dx, dy) {
                         if (lockRatio === 0) return { dx: dx, dy: dy };
                         var ratio = getLockRatio();
-                        // Compute new dimensions maintaining ratio from the direction
-                        var r = cropRect;
                         var ndx = dx, ndy = dy;
-                        if (dir === 'br') {
-                            ndx = dx; ndy = ndx / ratio;
-                        } else if (dir === 'tl') {
-                            ndx = dx; ndy = ndx / ratio;
-                        } else if (dir === 'tr') {
-                            ndx = dx; ndy = -ndx / ratio;
-                        } else if (dir === 'bl') {
-                            ndx = dx; ndy = ndx / ratio;
-                        } else if (dir === 'l' || dir === 'r') {
-                            ndy = ndx / ratio;
-                        } else if (dir === 't' || dir === 'b') {
-                            ndx = ndy * ratio;
-                        }
+                        if (dir === 'br') { ndy = ndx / ratio; }
+                        else if (dir === 'tl') { ndy = ndx / ratio; }
+                        else if (dir === 'tr') { ndy = -ndx / ratio; }
+                        else if (dir === 'bl') { ndy = -ndx / ratio; }
+                        else if (dir === 'l' || dir === 'r') { ndy = (dir === 'r' ? 1 : -1) * ndx / ratio; }
+                        else if (dir === 't' || dir === 'b') { ndx = ndy * ratio; }
                         return { dx: ndx, dy: ndy };
                     }
 
@@ -5030,7 +5008,7 @@
                         if (!pos) return;
                         var hit = hitTest(pos.x, pos.y);
                         if (!hit) return;
-                        e.preventDefault();
+                        e.preventDefault(); e.stopPropagation();
                         dragInfo = { type: hit, sx: pos.x, sy: pos.y, ox: cropRect.x, oy: cropRect.y, ow: cropRect.w, oh: cropRect.h };
                     }
 
@@ -5048,31 +5026,41 @@
                         if (!pos) return;
                         var s = cropCanvas._scale || 1;
                         var dx = (pos.x - dragInfo.sx) / s, dy = (pos.y - dragInfo.sy) / s;
-                        var r = cropRect;
-                        var ad = applyAspectLock(dragInfo.type, dx, dy);
-                        switch (dragInfo.type) {
-                            case 'move':
-                                r.x = dragInfo.ox + dx; r.y = dragInfo.oy + dy; break;
-                            case 'br':
-                                r.w = Math.max(20, dragInfo.ow + ad.dx);
-                                r.h = Math.max(20, dragInfo.oh + ad.dy); break;
-                            case 'tl':
-                                r.x = dragInfo.ox + ad.dx; r.y = dragInfo.oy + ad.dy;
-                                r.w = Math.max(20, dragInfo.ow - ad.dx);
-                                r.h = Math.max(20, dragInfo.oh - ad.dy); break;
-                            case 'tr':
-                                r.y = dragInfo.oy + ad.dy;
-                                r.w = Math.max(20, dragInfo.ow + ad.dx);
-                                r.h = Math.max(20, dragInfo.oh - ad.dy); break;
-                            case 'bl':
-                                r.x = dragInfo.ox + ad.dx;
-                                r.w = Math.max(20, dragInfo.ow - ad.dx);
-                                r.h = Math.max(20, dragInfo.oh + ad.dy); break;
-                            case 'l': r.x = dragInfo.ox + ad.dx; r.w = Math.max(20, dragInfo.ow - ad.dx); break;
-                            case 'r': r.w = Math.max(20, dragInfo.ow + ad.dx); break;
-                            case 't': r.y = dragInfo.oy + ad.dy; r.h = Math.max(20, dragInfo.oh - ad.dy); break;
-                            case 'b': r.h = Math.max(20, dragInfo.oh + ad.dy); break;
+                        var r = cropRect, di = dragInfo;
+                        var ad = applyAspectLock(di.type, dx, dy);
+
+                        var newX = di.ox, newY = di.oy, newW = di.ow, newH = di.oh;
+
+                        if (di.type === 'move') {
+                            newX = di.ox + dx; newY = di.oy + dy;
+                        } else if (di.type === 'br') {
+                            newW = Math.max(20, di.ow + ad.dx);
+                            newH = Math.max(20, di.oh + ad.dy);
+                        } else if (di.type === 'tl') {
+                            newX = di.ox + ad.dx; newY = di.oy + ad.dy;
+                            newW = Math.max(20, di.ow - ad.dx);
+                            newH = Math.max(20, di.oh - ad.dy);
+                        } else if (di.type === 'tr') {
+                            newY = di.oy + ad.dy; newW = Math.max(20, di.ow + ad.dx);
+                            newH = Math.max(20, di.oh - ad.dy);
+                        } else if (di.type === 'bl') {
+                            newX = di.ox + ad.dx; newW = Math.max(20, di.ow - ad.dx);
+                            newH = Math.max(20, di.oh + ad.dy);
+                        } else if (di.type === 'l') {
+                            newX = di.ox + ad.dx; newW = Math.max(20, di.ow - ad.dx);
+                            newH = Math.max(20, di.oh + ad.dy);
+                        } else if (di.type === 'r') {
+                            newW = Math.max(20, di.ow + ad.dx);
+                            newH = Math.max(20, di.oh + ad.dy);
+                        } else if (di.type === 't') {
+                            newY = di.oy + ad.dy; newH = Math.max(20, di.oh - ad.dy);
+                            newW = Math.max(20, di.ow + ad.dx);
+                        } else if (di.type === 'b') {
+                            newH = Math.max(20, di.oh + ad.dy);
+                            newW = Math.max(20, di.ow + ad.dx);
                         }
+
+                        r.x = newX; r.y = newY; r.w = newW; r.h = newH;
                         clampCrop();
                         renderCrop();
                     }
