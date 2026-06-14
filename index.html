@@ -496,7 +496,8 @@
 
         /* Image Edit Drawer */
         #image-edit-drawer,
-        #image-shadow-drawer {
+        #image-shadow-drawer,
+        #image-corner-drawer {
             position: absolute;
             top: 0;
             /* Cover the entire controls area */
@@ -516,25 +517,30 @@
         }
 
         #image-edit-drawer.active,
-        #image-shadow-drawer.active {
+        #image-shadow-drawer.active,
+        #image-corner-drawer.active {
             transform: translateY(0);
         }
 
         /* Drawer dark scrollbar — match .controls-scroll style */
         #image-edit-drawer [class*="overflow-y-auto"],
-        #image-shadow-drawer [class*="overflow-y-auto"] {
+        #image-shadow-drawer [class*="overflow-y-auto"],
+        #image-corner-drawer [class*="overflow-y-auto"] {
         }
         #image-edit-drawer [class*="overflow-y-auto"]::-webkit-scrollbar,
-        #image-shadow-drawer [class*="overflow-y-auto"]::-webkit-scrollbar {
+        #image-shadow-drawer [class*="overflow-y-auto"]::-webkit-scrollbar,
+        #image-corner-drawer [class*="overflow-y-auto"]::-webkit-scrollbar {
             width: 6px;
         }
         #image-edit-drawer [class*="overflow-y-auto"]::-webkit-scrollbar-track,
-        #image-shadow-drawer [class*="overflow-y-auto"]::-webkit-scrollbar-track {
+        #image-shadow-drawer [class*="overflow-y-auto"]::-webkit-scrollbar-track,
+        #image-corner-drawer [class*="overflow-y-auto"]::-webkit-scrollbar-track {
             background: transparent;
             border-radius: 4px;
         }
         #image-edit-drawer [class*="overflow-y-auto"]::-webkit-scrollbar-thumb,
-        #image-shadow-drawer [class*="overflow-y-auto"]::-webkit-scrollbar-thumb {
+        #image-shadow-drawer [class*="overflow-y-auto"]::-webkit-scrollbar-thumb,
+        #image-corner-drawer [class*="overflow-y-auto"]::-webkit-scrollbar-thumb {
             background: #555;
             border-radius: 4px;
         }
@@ -1060,6 +1066,23 @@
                     </div>
                 </div>
 
+                <!-- Rounded Corners Control -->
+                <div id="ctrl-corner" class="control-group bg-[#3a3a45] p-3 rounded-2xl flex items-center justify-between">
+                    <label class="text-sm font-medium text-gray-300">图片圆角</label>
+                    <div class="flex items-center space-x-3">
+                        <button id="btn-corner-settings"
+                            class="text-xs bg-[#29499d] hover:bg-[#345ac5] text-white px-3 py-1.5 rounded-lg transition-colors hidden shadow-sm font-medium">
+                            设置
+                        </button>
+                        <div class="relative inline-block w-10 h-6 align-middle select-none transition duration-200 ease-in">
+                            <input type="checkbox" id="toggle-corner"
+                                class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer checked:right-0 right-4" />
+                            <label for="toggle-corner"
+                                class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-600 cursor-pointer"></label>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Mode Selection -->
                 <div>
                     <label class="text-sm font-medium text-gray-300 block mb-2 pl-1">背景风格</label>
@@ -1401,7 +1424,7 @@
                     <div>
                         <div class="flex justify-between items-center mb-1">
                             <label class="text-sm font-medium text-gray-300">大小</label>
-                            <input type="number" id="drawer-val-s-size" min="0" max="200"
+                            <input type="number" id="drawer-val-s-size" min="0" max="1000"
                                 class="w-16 bg-[#333] text-white rounded px-2 py-1 text-right border border-[#444]">
                         </div>
                         <input type="range" id="drawer-slider-s-size" min="0" max="200" value="0"
@@ -1584,6 +1607,29 @@
                 </div>
             </div>
 
+            <!-- ROUNDED CORNER DRAWER -->
+            <div id="image-corner-drawer" class="p-6">
+                <div class="flex justify-between items-center mb-6 pt-8">
+                    <h3 class="text-white font-bold text-lg">图片圆角</h3>
+                    <button id="btn-close-corner" title="关闭"
+                        class="text-gray-400 hover:text-white p-2 bg-[#3a3a45] rounded-full">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+                </div>
+                <div class="space-y-6 overflow-y-auto pb-4 controls-scroll">
+                    <!-- Radius -->
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="text-sm font-medium text-gray-300">圆角大小</label>
+                            <input type="number" id="drawer-val-c-radius" min="0" max="1000"
+                                class="w-16 bg-[#333] text-white rounded px-2 py-1 text-right border border-[#444]">
+                        </div>
+                        <input type="range" id="drawer-slider-c-radius" min="0" max="1000" value="0"
+                            class="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer">
+                    </div>
+                </div>
+            </div>
+
             <!-- CROP MODAL -->
             <div id="crop-modal" class="fixed inset-0 z-[9999] flex" style="display:none;">
                 <div class="absolute inset-0 bg-black/70" id="crop-modal-backdrop"></div>
@@ -1663,7 +1709,8 @@
                     bgBlendMode: 'screen',
                     exportQuality: 95,
                     exportScale: 50,
-                    shadow: { enabled: false, blur: 20, distance: 10, angle: 45, size: 0, opacity: 0.5, color: '#000000' }
+                    shadow: { enabled: false, blur: 20, distance: 10, angle: 45, size: 0, opacity: 0.5, color: '#000000' },
+                    corner: { enabled: false, radius: 100 }
                 };
 
                 let appState = JSON.parse(localStorage.getItem('picjoin_settings')) || { ...defaultState };
@@ -1671,7 +1718,8 @@
                 if (appState.exportScale === undefined) appState.exportScale = 50;
                 if (appState.scaleFree === undefined) appState.scaleFree = 200;
                 if (appState.scaleStrip === undefined) appState.scaleStrip = 100;
-                if (!appState.shadow) appState.shadow = { enabled: false, blur: 20, distance: 10, angle: 45, size: 0, opacity: 0.5, color: '#000000' }; // Migration
+                if (!appState.shadow) appState.shadow = { enabled: false, blur: 20, distance: 10, angle: 45, size: 0, opacity: 0.5, color: '#000000' };
+                if (!appState.corner) appState.corner = { enabled: false, radius: 100 }; // Migration
                 // Migration for old shadow format
                 if (appState.shadow.x !== undefined) {
                     appState.shadow.distance = Math.sqrt(appState.shadow.x ** 2 + appState.shadow.y ** 2) || 10;
@@ -1807,6 +1855,14 @@
                     shadowDrawer: document.getElementById('image-shadow-drawer'),
                     btnShadowPicker: document.getElementById('btn-shadow-picker'),
 
+                    // Corner
+                    cornerDrawer: document.getElementById('image-corner-drawer'),
+                    btnCornerSettings: document.getElementById('btn-corner-settings'),
+                    btnCloseCorner: document.getElementById('btn-close-corner'),
+                    toggleCorner: document.getElementById('toggle-corner'),
+                    cRadiusSlider: document.getElementById('drawer-slider-c-radius'),
+                    cRadiusNum: document.getElementById('drawer-val-c-radius'),
+
                     // Crop
                     cropModal: document.getElementById('crop-modal'),
                     cropCanvas: document.getElementById('crop-canvas'),
@@ -1834,6 +1890,7 @@
                     setupCanvasInteraction();
                     setupCustomColorPicker();
                     setupShadowListeners();
+                    setupCornerListeners();
                 }
 
                 function renderColorPresets() {
@@ -1903,6 +1960,15 @@
                         const btn = document.getElementById('btn-shadow-settings');
                         if (btn) {
                             if (appState.shadow.enabled) btn.classList.remove('hidden');
+                            else btn.classList.add('hidden');
+                        }
+                    }
+                    const cornerToggle = document.getElementById('toggle-corner');
+                    if (cornerToggle && appState.corner) {
+                        cornerToggle.checked = appState.corner.enabled;
+                        const btn = document.getElementById('btn-corner-settings');
+                        if (btn) {
+                            if (appState.corner.enabled) btn.classList.remove('hidden');
                             else btn.classList.add('hidden');
                         }
                     }
@@ -2648,6 +2714,46 @@
                     shadowInputs.drawer.classList.remove('active');
                 }
 
+                // ===== ROUNDED CORNER DRAWER =====
+                const cornerInputs = {
+                    drawer: document.getElementById('image-corner-drawer'),
+                    btnClose: document.getElementById('btn-close-corner'),
+                    radiusSlider: document.getElementById('drawer-slider-c-radius'),
+                    radiusNum: document.getElementById('drawer-val-c-radius'),
+                };
+
+                function openCornerEditor() {
+                    shadowInputs.drawer.classList.remove('active');
+                    cornerInputs.radiusSlider.value = appState.corner.radius;
+                    cornerInputs.radiusNum.value = appState.corner.radius;
+                    cornerInputs.drawer.classList.add('active');
+                }
+
+                function closeCornerEditor() {
+                    cornerInputs.drawer.classList.remove('active');
+                }
+
+                function setupCornerListeners() {
+                    cornerInputs.btnClose.addEventListener('click', closeCornerEditor);
+
+                    document.getElementById('toggle-corner').addEventListener('change', (e) => {
+                        appState.corner.enabled = e.target.checked;
+                        const btn = document.getElementById('btn-corner-settings');
+                        if (e.target.checked) btn.classList.remove('hidden');
+                        else btn.classList.add('hidden');
+                        requestRender();
+                        saveSettings();
+                    });
+
+                    document.getElementById('btn-corner-settings').addEventListener('click', openCornerEditor);
+
+                    bindSync(cornerInputs.radiusSlider, cornerInputs.radiusNum, (val) => {
+                        appState.corner.radius = parseInt(val) || 0;
+                        requestRender();
+                        saveSettings();
+                    });
+                }
+
                 function updateShadowColorUI(color) {
                     const container = document.getElementById('shadow-color-presets');
                     if (!container) return;
@@ -3242,12 +3348,36 @@
                  * Draw an image with optional crop support.
                  * item.edit.crop = { x, y, w, h } in image pixel coordinates.
                  */
+                function roundRectPath(ctx, x, y, w, h, r) {
+                    if (w < 2 * r) r = w / 2;
+                    if (h < 2 * r) r = h / 2;
+                    ctx.beginPath();
+                    ctx.moveTo(x + r, y);
+                    ctx.lineTo(x + w - r, y);
+                    ctx.arcTo(x + w, y, x + w, y + r, r);
+                    ctx.lineTo(x + w, y + h - r);
+                    ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+                    ctx.lineTo(x + r, y + h);
+                    ctx.arcTo(x, y + h, x, y + h - r, r);
+                    ctx.lineTo(x, y + r);
+                    ctx.arcTo(x, y, x + r, y, r);
+                    ctx.closePath();
+                }
+
                 function drawImageWithCrop(ctx, item, dx, dy, dw, dh) {
+                    if (appState.corner && appState.corner.enabled && appState.corner.radius > 0) {
+                        ctx.save();
+                        roundRectPath(ctx, dx, dy, dw, dh, appState.corner.radius);
+                        ctx.clip();
+                    }
                     var c = item.edit && item.edit.crop;
                     if (c && c.w > 0 && c.h > 0) {
                         ctx.drawImage(item.img, c.x, c.y, c.w, c.h, dx, dy, dw, dh);
                     } else {
                         ctx.drawImage(item.img, dx, dy, dw, dh);
+                    }
+                    if (appState.corner && appState.corner.enabled && appState.corner.radius > 0) {
+                        ctx.restore();
                     }
                 }
 
@@ -4339,7 +4469,10 @@
                             // Scale blur radius by scale factor to keep visual consistency on small canvas
                             const blurRadius = 20 * scale;
                             ctx.filter = `blur(${blurRadius}px) saturate(${item.edit.sat}%) brightness(${100 + item.edit.bri}%) contrast(${item.edit.con}%)`;
+                            var _savedCorner = appState.corner && appState.corner.enabled;
+                            if (_savedCorner) appState.corner.enabled = false;
                             drawImageWithCrop(ctx, item, f.x, f.y, f.w, f.h);
+                            if (_savedCorner) appState.corner.enabled = true;
                             ctx.filter = 'none';
                             ctx.restore();
                         });
@@ -4350,7 +4483,10 @@
                             const f = item.free;
 
                             ctx.filter = `saturate(${e.sat}%) brightness(${100 + e.bri}%) contrast(${e.con}%)`;
+                            var _savedCorner = appState.corner && appState.corner.enabled;
+                            if (_savedCorner) appState.corner.enabled = false;
                             drawImageWithCrop(ctx, item, f.x, f.y, f.w, f.h);
+                            if (_savedCorner) appState.corner.enabled = true;
                             ctx.filter = 'none';
                         });
                     } else {
@@ -5016,7 +5152,11 @@
                             const ambientBlur = baseBlur + variableBlur;
 
                             offCtx.filter = `blur(${ambientBlur}px) saturate(${item.edit.sat}%) brightness(${100 + item.edit.bri}%) contrast(${item.edit.con}%)`;
+                            // Skip corners for blur layers (free mode only)
+                            var _savedCorner = appState.corner && appState.corner.enabled;
+                            if (_savedCorner) appState.corner.enabled = false;
                             drawImageWithCrop(offCtx, item, f.x, f.y, f.w, f.h);
+                            if (_savedCorner) appState.corner.enabled = true;
                             offCtx.restore();
                         });
 
@@ -5054,7 +5194,10 @@
                             if (appState.saturation !== 100) filterEffects.push(`saturate(${appState.saturation}%)`);
 
                             if (filterEffects.length > 0) offCtx.filter = filterEffects.join(' ');
+                            var _savedCorner = appState.corner && appState.corner.enabled;
+                            if (_savedCorner) appState.corner.enabled = false;
                             drawImageWithCrop(offCtx, item, f.x, f.y, f.w, f.h);
+                            if (_savedCorner) appState.corner.enabled = true;
                             offCtx.restore();
                         });
 
